@@ -23,9 +23,11 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYXNyZW5uaW5nZXIiLCJhIjoiY2szMGV1OG9jMDM4aTNkbnphNXpzcm1wYyJ9.UnnfQkiXT3y4ALqIjzHnNw';
 var map = new mapboxgl.Map({
 container: 'map',
-style: 'mapbox://styles/asrenninger/ck94x9vtt4j4h1ipi496sgfdh',
+style: 'mapbox://styles/asrenninger/ck94zj6re187o1jo5r4n5r7q5',
 center: [0, 0],
-zoom: 4
+zoom: 4,
+minZoom: 4,
+maxZoom: 15
 });
 
 map.on('load', function() {
