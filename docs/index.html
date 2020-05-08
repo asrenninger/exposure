@@ -20,6 +20,32 @@
 <body>
 <style>
 
+body {
+  margin: 0;
+  padding: 0;
+}
+
+h2,
+h3 {
+  margin: 10px;
+  font-size: 1.2em;
+}
+
+h3 {
+  font-size: 1.1em;
+}
+
+h4 {
+  font-size: 1em;
+	font-weight: bold;
+}
+
+p {
+  font-size: 1em;
+  margin: 10px;
+  text-align: left;
+}
+
 .mapboxgl-popup {
 max-width: 400px;
 font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
@@ -29,20 +55,11 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
   position: absolute;
   bottom: 0;
   right: 0;
-/*  background: rgba(255, 255, 255, 0.5); */
+  background: rgba(255, 255, 255, 0.5);
   margin-right: 20px;
   font-family: Arial, sans-serif;
   overflow: auto;
-  border-radius: 10px;
-}
-
-#legend {
-  padding: 10px;
-/*  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); */
-  line-height: 18px;
-  height: 150px;
-  margin-bottom: 40px;
-  width: 100px;
+  border-radius: 0px;
 }
 
 .legend-key {
@@ -53,9 +70,57 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
   margin-right: 5px;
 }
 
+#legend {
+  padding: 10px;
+  line-height: 18px;
+  height: 250px;
+  margin-bottom: 40px;
+  width: 120px;
+}
+
+#features {
+  top: 1%;
+	left: 1%;
+  height: 200px;
+  margin-top: 20px;
+  width: 300px;
+}
+
+#description {
+	left: 1%;
+	margin-bottom: 40px;
+  height: 250px;
+  margin-top: 20px;
+  width: 300px;
+}
+
 </style>
 <div id="map"></div>
-<div class='map-overlay' id='legend'></div>
+<div class='map-overlay' id='features'>
+	<h2>
+		County-to-county flows
+	</h2>
+	<div id='sum'>
+		<p>
+			<b>Hover over a county!</b>
+		</p>
+	</div>
+</div>
+<div class='map-overlay' id='legend'>
+	<h4>
+		Shared devices
+	</h4>
+</div>
+<div class='map-overlay' id='description'>
+	<h2>
+		About the data
+	</h2>
+	<div id='desc'>
+		<p>
+			These data come from<a id="data-link" href="https://github.com/COVIDExposureIndices/COVIDExposureIndices" target="_blank"> a repository </a>managed by a team of academics across several business schools. To think about the data, ask "among smartphones that pinged in a given county today, what share of those devices pinged in each county at least once during the previous 14 days?" The values (and the hues) represent the answer.
+		</p>
+	</div>
+</div>
 
 <script>
 
@@ -131,6 +196,11 @@ map.on('load', function() {
 		geodata.type = "FeatureCollection";
 		geodata.features = current;
 
+		topten = geodata.features.sort(function(a, b) {
+			return a.properties.value < b.properties.value ? 1 : -1;
+		})
+		.slice(1, 11);
+
 		map.addSource('data', {
 			'type': 'geojson',
 			'data': geodata
@@ -190,7 +260,14 @@ map.on('load', function() {
 			geodata.type = "FeatureCollection";
 			geodata.features = newdata;
 
+			topten = geodata.features.sort(function(a, b) {
+				return a.properties.value < b.properties.value ? 1 : -1;
+			})
+			.slice(1, 11);
+
 			map.getSource('data').setData(geodata);
+
+			$('b').text(e.features[0].properties.name_o);
 
 		});
 
