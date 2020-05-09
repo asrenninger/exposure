@@ -78,12 +78,21 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
   width: 120px;
 }
 
-#features {
+#data {
   top: 1%;
 	left: 1%;
-  height: 200px;
+  height: 300px;
   margin-top: 20px;
   width: 300px;
+}
+
+#title {
+  top: 1%;
+	right: 1%;
+  height: 80px;
+  margin-top: 20px;
+  width: 300px;
+	text-align: right;
 }
 
 #description {
@@ -96,15 +105,18 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 
 </style>
 <div id="map"></div>
-<div class='map-overlay' id='features'>
+<div class='map-overlay' id='title'>
 	<h2>
-		County-to-county flows
+		INDEX OF EXPOSURE
 	</h2>
 	<div id='sum'>
-		<p>
-			<b>Hover over a county!</b>
-		</p>
+		<h3>
+			<b>Hover over a county</b>
+		</h3>
 	</div>
+</div>
+<div class='map-overlay' id='data'>
+	<div id="viz"></div>
 </div>
 <div class='map-overlay' id='legend'>
 	<h4>
@@ -158,6 +170,17 @@ font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 
 map.on('load', function() {
 
+	var margin = {top: 20, right: 30, bottom: 20, left: 150},
+			width = 290 - margin.left - margin.right,
+			height = 290 - margin.top - margin.bottom;
+
+	var svg = d3.select("#viz")
+		.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 	d3.queue()
 			.defer(d3.json, "https://ndownloader.figshare.com/files/22397235?private_link=38ff09ae700b294a587c")
 	    .defer(d3.csv, "https://ndownloader.figshare.com/files/22429338?private_link=364ff71fa7260b2738cf", function(d) {
@@ -169,9 +192,6 @@ map.on('load', function() {
 	function ready (error, base, data) {
 
 		if (error) throw error;
-
-		console.log(data)
-		console.log(base)
 
 		map.addSource('counties', {
 			'type': 'geojson',
@@ -241,9 +261,9 @@ map.on('load', function() {
 		});
 
 		map.on('mousemove', 'base-layer', function(e) {
+
 			newdata = []
 
-			console.log(e.features[0].properties.name_o);
 			source = e.features[0].properties.fips;
 
 			target = data.filter(function(d) {
@@ -268,6 +288,53 @@ map.on('load', function() {
 			map.getSource('data').setData(geodata);
 
 			$('b').text(e.features[0].properties.name_o);
+
+			values = topten.map(function(x) { return x.properties.value })
+			names = topten.map(function(x) {
+				var temp = x.properties.name_o;
+				return  temp.split(', ').join('\n');
+			});
+
+			d3.selectAll("svg").remove();
+
+			var svg = d3.select("#viz")
+			.append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+  		var x = d3.scaleLinear()
+			.domain([0, 0.5])
+			.range([ 0, width]);
+
+// I like the look without the x axis but here it is
+//			svg.append("g")
+//			.attr("transform", "translate(0," + height + ")")
+//			.call(d3.axisBottom(x))
+//			.selectAll("text")
+//      .attr("transform", "translate(-10,10)rotate(-90)")
+//      .style("text-anchor", "end");
+
+  		// Y axis
+  		var y = d3.scaleBand()
+    						.range([ 0, height ])
+    						.domain(topten.map(function(d) { return d.properties.name_o; }))
+    						.padding(.1);
+
+  		svg.append("g").call(d3.axisLeft(y))
+
+  		//Bars
+  		svg.selectAll("myRect")
+						.data(topten)
+    				.enter()
+    				.append("rect")
+    				.attr("x", x(0) )
+    				.attr("y", function(d) { return y(d.properties.name_o); })
+    				.attr("width", function(d) { return x(d.properties.value); })
+    				.attr("height", y.bandwidth() )
+    				.attr("fill", "#00007f")
 
 		});
 
