@@ -146,7 +146,10 @@ map.on('load', function() {
         ],
         'fill-opacity': 1
         }
+
   });
+
+  $('b').text("Hover over county")
 
   //Now on hovers we want to do a bunch of highlighting
   map.on('mousemove', 'base-layer', function(e) {
